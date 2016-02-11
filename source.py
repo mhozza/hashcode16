@@ -98,7 +98,7 @@ class DroneManager:
         target = orders[order][0]
 
         total_time = self.drone_availability[drone] + dist(self.drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
-        self.drone_availability[drone] += total_time
+        self.drone_availability[drone] = total_time
         self.drone_positions[drone] = target
 
         return total_time
@@ -135,6 +135,8 @@ while num_completed_orders != orders_count:
 
 outfname = 'output.txt'
 with open(outfname, 'w+') as outfile:
+    outfile.write(str(len(commands)))
+    outfile.write('\n')
     for line in commands:
         outfile.write(line)
         outfile.write('\n')
