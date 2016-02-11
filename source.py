@@ -112,6 +112,7 @@ class DroneManager:
             res = self.allocate_drone(i, closest, order)
             item_times.append(res)
             completed_items_per_order[order].add(index)
+            warehouses[closest][1][i] -= 1
 
         end_time = max(item_times)
 
@@ -142,4 +143,3 @@ with open(outfname, 'w+') as outfile:
         outfile.write('\n')
 
 print("Total score {}".format(total_score))
-
