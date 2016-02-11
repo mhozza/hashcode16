@@ -6,7 +6,7 @@ if len(sys.argv) != 2:
     print("You need to supply input filename")
     sys.exit(1)
 
-fname = 'busy_day.in'
+fname = sys.argv[1]
 with open(fname, 'r') as inputfile:
     rows, cols, drones, turns, maxweight = [
         int(x)
@@ -34,7 +34,7 @@ with open(fname, 'r') as inputfile:
 
 completed_orders = {}
 completed_items_per_order = [set() for i in range(len(orders))]
-
+num_completed_orders = 0
 
 def order_completed(order):
     return order in completed_orders
@@ -94,7 +94,7 @@ class DroneManager:
         warehouse = warehouses[w]
         drone = self.find_fastest_available_drone(*warehouse[0])
         commands.append('{} L {} {} 1'.format(drone, w, i))
-        commands.append( '{} D {} {} 1'.format(drone, order, i))
+        commands.append('{} D {} {} 1'.format(drone, order, i))
         target = orders[order][0]
 
         total_time = self.drone_availability[drone] + dist(self.drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
@@ -113,17 +113,31 @@ class DroneManager:
             item_times.append(res)
             completed_items_per_order[order].add(index)
 
-        completed_orders[order] = max(item_times)
+        end_time = max(item_times)
 
-print("Total score {}".format(total_score))
+        completed_orders[order] = end_time
+        deliver_order(end_time)
+        global num_completed_orders
+        num_completed_orders += 1
+
+        return end_time
+
 
 dm = DroneManager()
-dm.deal_with_order(select_min_order()[1])
-dm.deal_with_order(select_min_order()[1])
+print("Total orders {}".format(orders_count))
+
+while num_completed_orders != orders_count:
+    if num_completed_orders % 10 == 0:
+        print(num_completed_orders)
+    end_time = dm.deal_with_order(select_min_order()[1])
+    if end_time > turns:
+        break
 
 outfname = 'output.txt'
 with open(outfname, 'w+') as outfile:
     for line in commands:
         outfile.write(line)
         outfile.write('\n')
+
+print("Total score {}".format(total_score))
 
