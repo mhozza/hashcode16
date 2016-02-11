@@ -33,6 +33,17 @@ with open(fname, 'r') as inputfile:
 
     # Order is a tuple (position, count of items, list of item ids)
 
+completed_orders = {}
+completed_items_per_order = [set() for i in range(len(orders))]
+
+
+def order_completed(order):
+    return order in completed_orders
+
+
+def item_completed(order, item_index):
+    return item_index in completed_items_per_order[order]
+
 commands = []
 
 def dist(s, t):
@@ -42,7 +53,7 @@ def dist(s, t):
 
 def item_from_closest_warehouse(item, target_position):
     '''returns closest warehouse and it's dist from the item target'''
-    closest = (float('inf'), None)  #dist, warehouse
+    closest = (float('inf'), None)  # dist, warehouse
     for i, warehouse in enumerate(warehouses):
         if warehouse[1][item]:
             if closest[0] > dist(target_position, warehouse[0]):
@@ -52,12 +63,11 @@ def item_from_closest_warehouse(item, target_position):
 
 def select_min_order():
     minimal = (float('inf'), None)
-    for i, (order_position, _, items) in enumerate(orders):
-        order_duration = max(
-            item_from_closest_warehouse(item, order_position)[0] for item in items
-        )
+    for order_index, (order_position, _, items) in filter(lambda x: not order_completed(x[0]), enumerate(orders)):
+        item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in filter(lambda x: not item_completed(order_index, x), items)]
+        order_duration = max(item_durations)
         if order_duration < minimal[0]:
-            minimal = (order_duration, i)
+            minimal = (order_duration, order_index)
     return minimal
 
 print(select_min_order())
