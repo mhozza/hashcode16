@@ -37,6 +37,7 @@ completed_orders = {}
 completed_items_per_order = [set() for i in range(len(orders))]
 num_completed_orders = 0
 
+
 def order_completed(order):
     return order in completed_orders
 
@@ -64,7 +65,7 @@ def item_from_closest_warehouse(item, target_position):
 def select_min_order():
     minimal = (float('inf'), None)
     for order_index, (order_position, _, items) in filter(lambda x: not order_completed(x[0]), enumerate(orders)):
-        item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in filter(lambda x: not item_completed(order_index, x), items)]
+        item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in items]
         order_duration = max(item_durations) if len(item_durations) else float('inf')
         if order_duration < minimal[0]:
             minimal = (order_duration, order_index)
@@ -116,7 +117,6 @@ class DroneManager:
 
         for i in orders[order][2]:
             closest = item_from_closest_warehouse(i, target)[1]
-            warehouses[closest][1][i] -= 1
             warehouse_items_counts[closest][i] += 1
 
         deliveries = []
@@ -142,6 +142,7 @@ class DroneManager:
                     current_weight += set_weight
                     items.append((i, available_count))
                     ware[i] -= available_count
+                    warehouses[w][1][i] -= available_count
 
                 res = self.allocate_drone(items, w, order)
                 item_times.append(res)                
