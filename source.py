@@ -72,35 +72,38 @@ def deliver_order(turn):
 class DroneManager:
     # Drone positions when its current task is finished
     # Drones start at first warehouse
-    drone_positions = [(warehouses[0]) for i in range(0, drones)]
+    drone_positions = [(warehouses[0][0]) for i in range(0, drones)]
 
     # When will be drone available
     drone_availability = [0 for i in range(0, drones)]    
 
-    def find_fastest_available_drone(x, y):
-        drone_times = [drone_availability[k] + dist(drone_positions[k], (x, y)) + 1 for k in range(0, drones)]
+    def find_fastest_available_drone(self, x, y):
+        drone_times = [self.drone_availability[k] + dist(self.drone_positions[k], (x, y)) + 1 for k in range(0, drones)]
 
         return drone_times.index(min(drone_times))
 
-    def allocate_drone(i, w, order):
+    def allocate_drone(self, i, w, order):
         warehouse = warehouses[w]
-        drone = find_fastest_available_drone(*warehouse[0])
-        commands += '{} L {} {} 1'.format(drone, w, i)    
-        commands += '{} D {} {} 1'.format(drone, order, i)
+        drone = self.find_fastest_available_drone(*warehouse[0])
+        commands.append('{} L {} {} 1'.format(drone, w, i))
+        commands.append( '{} D {} {} 1'.format(drone, order, i))
         target = orders[order][0]
         
-        total_time = drone_availability[drone] + dist(drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
-        drone_availability[drone] += total_time
-        drone_positions[drone] = target
+        total_time = self.drone_availability[drone] + dist(self.drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
+        self.drone_availability[drone] += total_time
+        self.drone_positions[drone] = target
+        
+        return total_time
 
-    def deal_with_order(order):
+    def deal_with_order(self, order):
         # For each item in order, allocate a drone to it 
         target = orders[order][0]
         for i in orders[order][2]:
-            closest = item_from_closest_warehouse(i, target)
-            allocate_drone(i, closest, order)
-
-dm = DroneManager()
+            closest = item_from_closest_warehouse(i, target)[1]
+            res = self.allocate_drone(i, closest, order)
 
 
 print("Total score {}".format(total_score))
+
+dm = DroneManager()
+dm.deal_with_order(select_min_order()[1])
