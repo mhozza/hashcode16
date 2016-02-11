@@ -64,12 +64,11 @@ def select_min_order():
     minimal = (float('inf'), None)
     for order_index, (order_position, _, items) in filter(lambda x: not order_completed(x[0]), enumerate(orders)):
         item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in filter(lambda x: not item_completed(order_index, x), items)]
-        order_duration = max(item_durations)
+        order_duration = max(item_durations) if len(item_durations) else float('inf')
         if order_duration < minimal[0]:
             minimal = (order_duration, order_index)
     return minimal
 
-print(select_min_order())
 
 total_score = 0
 def deliver_order(turn):
@@ -84,7 +83,7 @@ class DroneManager:
     drone_positions = [(warehouses[0][0]) for i in range(0, drones)]
 
     # When will be drone available
-    drone_availability = [0 for i in range(0, drones)]    
+    drone_availability = [0 for i in range(0, drones)]
 
     def find_fastest_available_drone(self, x, y):
         drone_times = [self.drone_availability[k] + dist(self.drone_positions[k], (x, y)) + 1 for k in range(0, drones)]
@@ -97,15 +96,15 @@ class DroneManager:
         commands.append('{} L {} {} 1'.format(drone, w, i))
         commands.append( '{} D {} {} 1'.format(drone, order, i))
         target = orders[order][0]
-        
+
         total_time = self.drone_availability[drone] + dist(self.drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
         self.drone_availability[drone] += total_time
         self.drone_positions[drone] = target
-        
+
         return total_time
 
     def deal_with_order(self, order):
-        # For each item in order, allocate a drone to it 
+        # For each item in order, allocate a drone to it
         target = orders[order][0]
         item_times = []
         for index, i in enumerate(orders[order][2]):
