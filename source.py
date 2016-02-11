@@ -66,11 +66,8 @@ total_score = 0
 def deliver_order(turn):
     # Computes score
     score = math.ceil((turns - turn)/turns * 100)
+    global total_score
     total_score += score
-
-
-print("Total score {}".format(total_score))
-
 
 class DroneManager:
     # Drone positions when its current task is finished
@@ -104,3 +101,6 @@ class DroneManager:
             allocate_drone(i, closest, order)
 
 dm = DroneManager()
+
+
+print("Total score {}".format(total_score))
