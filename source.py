@@ -116,6 +116,7 @@ class DroneManager:
 
         for i in orders[order][2]:
             closest = item_from_closest_warehouse(i, target)[1]
+            warehouses[closest][1][i] -= 1
             warehouse_items_counts[closest][i] += 1
 
         deliveries = []
@@ -141,7 +142,6 @@ class DroneManager:
                     current_weight += set_weight
                     items.append((i, available_count))
                     ware[i] -= available_count
-                    warehouses[w][1][i] -= available_count
 
                 res = self.allocate_drone(items, w, order)
                 item_times.append(res)                
