@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import math
+from collections import defaultdict
 
 if len(sys.argv) != 2:
     print("You need to supply input filename")
@@ -90,11 +91,14 @@ class DroneManager:
 
         return drone_times.index(min(drone_times))
 
-    def allocate_drone(self, i, w, order):
+    def allocate_drone(self, itemcounts, w, order):
         warehouse = warehouses[w]
-        drone = self.find_fastest_available_drone(*warehouse[0])
-        commands.append('{} L {} {} 1'.format(drone, w, i))
-        commands.append('{} D {} {} 1'.format(drone, order, i))
+        drone = self.find_fastest_available_drone(*warehouse[w])
+        for i, count in itemcounts:
+            commands.append('{} L {} {} {}'.format(drone, w, i, count))
+
+        for i, count in itemcounts:
+            commands.append('{} D {} {} {}'.format(drone, order, i, count))
         target = orders[order][0]
 
         total_time = self.drone_availability[drone] + dist(self.drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
@@ -107,11 +111,39 @@ class DroneManager:
         # For each item in order, allocate a drone to it
         target = orders[order][0]
         item_times = []
-        for index, i in enumerate(orders[order][2]):
+
+        warehouse_items_counts = defaultdict(lambda: defaultdict(int))
+
+        for i in orders[order][2]:
             closest = item_from_closest_warehouse(i, target)[1]
-            res = self.allocate_drone(i, closest, order)
-            item_times.append(res)
-            completed_items_per_order[order].add(index)
+            warehouse_items_counts[closest][i] += 1
+
+        deliveries = []
+        for w in warehouse_items_counts:
+            ware = warehouse_items_counts[w]
+            def is_something_in_warehouse(ware):
+                for k in ware:
+                    if ware[k] != 0:
+                        return True
+                return False
+
+            while is_something_in_warehouse(ware):
+                items = []
+                current_weight = 0
+                for i in ware:
+                    available_weight = maxweight - current_weight
+                    item_weight = products[i]
+                    available_count = available_weight // item_weight
+                    available_count = min(available_count, ware[i])
+                    if (available_count == 0):
+                        continue
+                    set_weight = item_weight * available_count
+                    current_weight += set_weight
+                    items.append((i, available_count))
+                    ware[i] -= available_count
+
+                res = self.allocate_drone(items, w, order)
+                item_times.append(res)
 
         end_time = max(item_times)
 
@@ -132,6 +164,7 @@ while num_completed_orders != orders_count:
     end_time = dm.deal_with_order(select_min_order()[1])
     if end_time > turns:
         break
+
 
 outfname = 'output.txt'
 with open(outfname, 'w+') as outfile:
