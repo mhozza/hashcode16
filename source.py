@@ -108,7 +108,7 @@ class DroneManager:
 
         return total_time
 
-    def deal_with_order(self, order):
+    def deal_with_order(self, order, dry=False):
         # For each item in order, allocate a drone to it
         target = orders[order][0]
         item_times = []
@@ -118,6 +118,7 @@ class DroneManager:
         for i in orders[order][2]:
             closest = item_from_closest_warehouse(i, target)[1]
             warehouse_items_counts[closest][i] += 1
+            warehouses[closest][1][i] -= 1
 
         deliveries = []
         for w in warehouse_items_counts:
@@ -142,7 +143,6 @@ class DroneManager:
                     current_weight += set_weight
                     items.append((i, available_count))
                     ware[i] -= available_count
-                    warehouses[w][1][i] -= available_count
 
                 res = self.allocate_drone(items, w, order)
                 item_times.append(res)                
