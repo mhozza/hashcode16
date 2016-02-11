@@ -93,7 +93,7 @@ class DroneManager:
 
     def allocate_drone(self, itemcounts, w, order):
         warehouse = warehouses[w]
-        drone = self.find_fastest_available_drone(*warehouse[w])
+        drone = self.find_fastest_available_drone(*warehouse[0])
         for i, count in itemcounts:
             commands.append('{} L {} {} {}'.format(drone, w, i, count))
 
