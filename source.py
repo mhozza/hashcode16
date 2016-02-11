@@ -59,3 +59,12 @@ def select_min_order():
     return minimal
 
 print(select_min_order())
+
+total_score = 0
+def deliver_order(turn):
+    # Computes score
+    score = math.ceil((turns - turn)/turns * 100)
+    total_score += score
+
+
+print("Total score {}".format(total_score))
