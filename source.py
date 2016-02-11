@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import math
 # import seaborn as sns
@@ -32,16 +33,6 @@ with open(fname, 'r') as inputfile:
 
     # Order is a tuple (position, count of items, list of item ids)
 
-    item_type = 0
-
-    colormap = [[0 for i in range(0, cols)] for j in range(0, rows)]
-    for order in orders:
-        itemcount = order[2][item_type]
-        colormap[order[0][0]][order[0][1]] += itemcount
-
-    sns.heatmap(colormap, annot=True, fmt="d")
-
-
 def dist(s, t):
     '''Computes euclidian distance between source and target position'''
     return math.ceil(math.sqrt((s[0]-t[0])**2 + (s[1]-t[1])**2))
@@ -49,15 +40,22 @@ def dist(s, t):
 
 def item_from_closest_warehouse(item, target_position):
     '''returns closest warehouse and it's dist from the item target'''
-    closest = (None, None)  #dist, warehouse
+    closest = (float('inf'), None)  #dist, warehouse
     for i, warehouse in enumerate(warehouses):
         if warehouse[1][item]:
             if closest[0] > dist(target_position, warehouse[0]):
-                closest = dist(target_position, warehouse[0])
+                closest = dist(target_position, warehouse[0]), i
     return closest
 
 
-
 def select_min_order():
-    for order in orders:
-        pass
+    minimal = (float('inf'), None)
+    for i, (order_position, _, items) in enumerate(orders):
+        order_duration = max(
+            item_from_closest_warehouse(item, order_position)[0] for item in items
+        )
+        if order_duration < minimal[0]:
+            minimal = (order_duration, i)
+    return minimal
+
+print(select_min_order())
