@@ -33,6 +33,8 @@ with open(fname, 'r') as inputfile:
 
     # Order is a tuple (position, count of items, list of item ids)
 
+commands = []
+
 def dist(s, t):
     '''Computes euclidian distance between source and target position'''
     return math.ceil(math.sqrt((s[0]-t[0])**2 + (s[1]-t[1])**2))
@@ -68,3 +70,37 @@ def deliver_order(turn):
 
 
 print("Total score {}".format(total_score))
+
+
+class DroneManager:
+    # Drone positions when its current task is finished
+    # Drones start at first warehouse
+    drone_positions = [(warehouses[0]) for i in range(0, drones)]
+
+    # When will be drone available
+    drone_availability = [0 for i in range(0, drones)]    
+
+    def find_fastest_available_drone(x, y):
+        drone_times = [drone_availability[k] + dist(drone_positions[k], (x, y)) + 1 for k in range(0, drones)]
+
+        return drone_times.index(min(drone_times))
+
+    def allocate_drone(i, w, order):
+        warehouse = warehouses[w]
+        drone = find_fastest_available_drone(*warehouse[0])
+        commands += '{} L {} {} 1'.format(drone, w, i)    
+        commands += '{} D {} {} 1'.format(drone, order, i)
+        target = orders[order][0]
+        
+        total_time = drone_availability[drone] + dist(drone_positions[drone], warehouse[0]) + 1 + dist(warehouse[0], target) + 1
+        drone_availability[drone] += total_time
+        drone_positions[drone] = target
+
+    def deal_with_order(order):
+        # For each item in order, allocate a drone to it 
+        target = orders[order][0]
+        for i in orders[order][2]:
+            closest = item_from_closest_warehouse(i, target)
+            allocate_drone(i, closest, order)
+
+dm = DroneManager()
