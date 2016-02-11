@@ -141,9 +141,10 @@ class DroneManager:
                     current_weight += set_weight
                     items.append((i, available_count))
                     ware[i] -= available_count
+                    warehouses[w][1][i] -= available_count
 
                 res = self.allocate_drone(items, w, order)
-                item_times.append(res)
+                item_times.append(res)                
 
         end_time = max(item_times)
 
@@ -175,4 +176,3 @@ with open(outfname, 'w+') as outfile:
         outfile.write('\n')
 
 print("Total score {}".format(total_score))
-
