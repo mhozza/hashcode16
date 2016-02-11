@@ -37,6 +37,7 @@ completed_orders = {}
 completed_items_per_order = [set() for i in range(len(orders))]
 num_completed_orders = 0
 
+
 def order_completed(order):
     return order in completed_orders
 
@@ -64,7 +65,7 @@ def item_from_closest_warehouse(item, target_position):
 def select_min_order():
     minimal = (float('inf'), None)
     for order_index, (order_position, _, items) in filter(lambda x: not order_completed(x[0]), enumerate(orders)):
-        item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in filter(lambda x: not item_completed(order_index, x), items)]
+        item_durations = [item_from_closest_warehouse(item, order_position)[0] for item in items]
         order_duration = sum(item_durations) if len(item_durations) else float('inf')
         if order_duration < minimal[0]:
             minimal = (order_duration, order_index)
