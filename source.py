@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import math
-# import seaborn as sns
 
 if len(sys.argv) != 2:
     print("You need to supply input filename")
@@ -108,12 +107,24 @@ class DroneManager:
     def deal_with_order(self, order):
         # For each item in order, allocate a drone to it 
         target = orders[order][0]
-        for i in orders[order][2]:
+        item_times = []
+        for index, i in enumerate(orders[order][2]):
             closest = item_from_closest_warehouse(i, target)[1]
             res = self.allocate_drone(i, closest, order)
+            item_times.append(res)
+            completed_items_per_order[order].add(index)
 
+        completed_orders[order] = max(item_times)
 
 print("Total score {}".format(total_score))
 
 dm = DroneManager()
 dm.deal_with_order(select_min_order()[1])
+dm.deal_with_order(select_min_order()[1])
+
+outfname = 'output.txt'
+with open(outfname, 'w+') as outfile:
+    for line in commands:
+        outfile.write(line)
+        outfile.write('\n')
+
